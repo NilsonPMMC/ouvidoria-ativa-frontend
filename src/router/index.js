@@ -7,6 +7,7 @@ const router = createRouter({
         {
             path: '/',
             component: AppLayout,
+            meta: { requiresAuth: true },
             children: [
                 {
                     path: '/',
@@ -107,6 +108,11 @@ const router = createRouter({
             ]
         },
         {
+            path: '/pesquisa/:token',
+            name: 'pesquisa-publica',
+            component: () => import('@/views/pages/PesquisaPublica.vue')
+        },
+        {
             path: '/landing',
             name: 'landing',
             component: () => import('@/views/pages/Landing.vue')
@@ -133,6 +139,19 @@ const router = createRouter({
             component: () => import('@/views/pages/auth/Error.vue')
         }
     ]
+});
+
+router.beforeEach((to, from, next) => {
+    const accessToken = localStorage.getItem('accessToken');
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+
+    if (requiresAuth && !accessToken) {
+        next({ name: 'login' });
+    } else if (to.name === 'login' && accessToken) {
+        next({ name: 'dashboard' });
+    } else {
+        next();
+    }
 });
 
 export default router;
